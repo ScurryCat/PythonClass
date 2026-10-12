@@ -1,0 +1,49 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>修改讲师</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{% static 'css/course.css' %}">
+</head>
+<body>
+<div class="container">
+    <h1>修改讲师</h1>
+
+    <div class="panel">
+        <form class="form-box" method="post"
+              action="{% url 'courses:teacher_update' teacher.nickname %}">
+            {% csrf_token %}
+
+            <div class="form-row">
+                <label for="nickname">昵称（主键，不可修改）</label>
+                <input type="text" id="nickname" name="nickname"
+                       value="{{ teacher.nickname }}" readonly>
+                <p class="hint">
+                    昵称是 <code>teacher</code> 表的主键，<code>courses.teacher_id</code> 是指向它的外键，
+                    数据库的 <code>UPDATE_RULE</code> 是 <code>NO ACTION</code>（不允许改被引用的主键）。
+                    所以按文档的约定：<strong>以姓名为修改标准，姓名不能修改</strong>。
+                </p>
+            </div>
+
+            <div class="form-row">
+                <label for="introduction">简介</label>
+                <textarea id="introduction" name="introduction"
+                          rows="4">{{ teacher.introduction }}</textarea>
+            </div>
+
+            <div class="form-row">
+                <label for="fans">粉丝数</label>
+                <input type="number" id="fans" name="fans" min="0" value="{{ teacher.fans }}">
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">保存修改</button>
+                <a class="btn btn-default" href="{% url 'courses:list' %}">返回主页</a>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,194 @@
+/* 课程信息管理页面样式 */
+
+body {
+    background-color: #eef2f7;
+    font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+    color: #333;
+}
+
+.container {
+    margin-top: 36px;
+    margin-bottom: 60px;
+    max-width: 1180px;
+}
+
+h1 {
+    color: #2c3e50;
+    font-size: 28px;
+    font-weight: 600;
+    margin-bottom: 28px;
+    padding-bottom: 14px;
+    border-bottom: 3px solid #337ab7;
+}
+
+.panel {
+    background: #fff;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
+    padding: 20px 24px 8px;
+    margin-bottom: 28px;
+}
+
+.panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+}
+
+h2 {
+    color: #337ab7;
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+    padding-left: 12px;
+    border-left: 5px solid #337ab7;
+    line-height: 1.2;
+}
+
+.table {
+    margin-bottom: 12px;
+    background-color: #fff;
+}
+
+.table > thead > tr > th {
+    background-color: #f7f9fc;
+    color: #4a5568;
+    font-weight: 600;
+    border-bottom: 2px solid #e2e8f0;
+    white-space: nowrap;
+}
+
+.table > tbody > tr:hover {
+    background-color: #f0f7ff;
+}
+
+.col-op {
+    width: 160px;
+    white-space: nowrap;
+}
+
+.inline-form {
+    display: inline;
+    margin: 0;
+}
+
+.empty {
+    text-align: center;
+    color: #a0aec0;
+    padding: 26px 0 !important;
+}
+
+.muted {
+    color: #a0aec0;
+}
+
+/* 课程类型标签 */
+.tag {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 10px;
+    background-color: #e6f0fb;
+    color: #337ab7;
+    font-size: 12px;
+}
+
+.btn {
+    border-radius: 4px;
+    transition: all .18s ease;
+}
+
+.btn-primary {
+    background-color: #337ab7;
+    border-color: #2e6da4;
+}
+
+.btn-primary:hover {
+    background-color: #286090;
+    border-color: #204d74;
+}
+
+.btn-sm {
+    padding: 3px 10px;
+    font-size: 12px;
+}
+
+.alert {
+    border-radius: 4px;
+}
+
+/* ============ 表单页样式 ============ */
+.form-box {
+    padding: 6px 4px 18px;
+}
+
+.form-row {
+    margin-bottom: 18px;
+}
+
+.form-row > label {
+    display: block;
+    font-weight: 600;
+    color: #4a5568;
+    margin-bottom: 6px;
+    font-size: 14px;
+}
+
+.form-row input[type="text"],
+.form-row input[type="number"],
+.form-row input[type="email"],
+.form-row input[type="date"],
+.form-row select,
+.form-row textarea {
+    width: 100%;
+    max-width: 480px;
+    padding: 7px 10px;
+    border: 1px solid #cbd5e0;
+    border-radius: 4px;
+    font-size: 14px;
+    color: #333;
+    background-color: #fff;
+    transition: border-color .18s ease, box-shadow .18s ease;
+}
+
+.form-row input:focus,
+.form-row select:focus,
+.form-row textarea:focus {
+    border-color: #337ab7;
+    box-shadow: 0 0 0 3px rgba(51, 122, 183, .15);
+    outline: none;
+}
+
+.form-row input:disabled {
+    background-color: #f1f3f5;
+    color: #718096;
+    cursor: not-allowed;
+}
+
+.form-row textarea {
+    resize: vertical;
+}
+
+.req {
+    color: #e53e3e;
+}
+
+.hint {
+    margin-top: 6px;
+    font-size: 12px;
+    color: #a0aec0;
+    line-height: 1.7;
+}
+
+.hint code {
+    background-color: #f1f5f9;
+    color: #d53f8c;
+    padding: 1px 5px;
+    border-radius: 3px;
+}
+
+.form-actions {
+    padding-top: 6px;
+    border-top: 1px solid #edf2f7;
+    margin-top: 8px;
+}

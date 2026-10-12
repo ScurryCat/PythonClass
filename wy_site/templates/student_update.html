@@ -1,0 +1,87 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>修改学生</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{% static 'css/course.css' %}">
+</head>
+<body>
+<div class="container">
+    <h1>修改学生</h1>
+
+    <div class="panel">
+        <form class="form-box" method="post"
+              action="{% url 'courses:student_update' student.sno %}">
+            {% csrf_token %}
+
+            <div class="form-row">
+                <label for="sno">学号（主键，不可修改）</label>
+                <input type="text" id="sno" value="{{ student.sno }}" disabled>
+                <p class="hint">学号是主键，如需变更请删除后重新添加。</p>
+            </div>
+
+            <div class="form-row">
+                <label for="name">姓名 <span class="req">*</span></label>
+                <input type="text" id="name" name="name" required
+                       maxlength="30" value="{{ student.name }}">
+            </div>
+
+            <div class="form-row">
+                <label for="gender">性别</label>
+                <select id="gender" name="gender">
+                    <option value="1" {% if student.gender == 1 %}selected{% endif %}>男</option>
+                    <option value="0" {% if student.gender == 0 %}selected{% endif %}>女</option>
+                </select>
+            </div>
+
+            <div class="form-row">
+                <label for="age">年龄</label>
+                <input type="number" id="age" name="age" min="1" max="150" value="{{ student.age }}">
+            </div>
+
+            <div class="form-row">
+                <label for="email">邮箱</label>
+                <input type="email" id="email" name="email" value="{{ student.email }}">
+            </div>
+
+            <div class="form-row">
+                <label for="phone">联系电话</label>
+                <input type="text" id="phone" name="phone" maxlength="20" value="{{ student.phone }}">
+            </div>
+
+            <div class="form-row">
+                <label for="course">所报课程</label>
+                <select id="course" name="course">
+                    <option value="">-- 暂不选课 --</option>
+                    {% for c in courses %}
+                        <option value="{{ c.title }}"
+                                {% if student.course_id == c.title %}selected{% endif %}>
+                            {{ c.title }}（{{ c.get_type_display }}）
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-row">
+                <label for="enroll_at">入学时间 <span class="req">*</span></label>
+                <input type="date" id="enroll_at" name="enroll_at" required
+                       value="{{ student.enroll_at|date:'Y-m-d' }}">
+            </div>
+
+            <div class="form-row">
+                <label for="introduction">个人简介</label>
+                <textarea id="introduction" name="introduction"
+                          rows="3">{{ student.introduction }}</textarea>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">保存修改</button>
+                <a class="btn btn-default" href="{% url 'courses:list' %}">返回主页</a>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>

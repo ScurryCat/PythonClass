@@ -1,0 +1,12 @@
+# wy_site 项目依赖
+# 安装：  pip install -r requirements.txt
+#
+# 说明：Django 和 mysqlclient 是你直接用的；
+#       asgiref 和 sqlparse 是 Django 自动带上的依赖，写进来只是为了版本可复现。
+
+Django==5.2.18
+mysqlclient==2.3.0
+
+# 下面两个是 Django 的间接依赖，一般不用手写，列出以防版本漂移
+asgiref==3.12.1
+sqlparse==0.6.0

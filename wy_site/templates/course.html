@@ -1,0 +1,151 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>课程信息管理</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"
+          integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+    <link rel="stylesheet" href="{% static 'css/course.css' %}">
+</head>
+<body>
+<div class="container">
+
+    <h1>课程信息管理</h1>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-success">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- ============ 讲师信息 ============ -->
+    <div class="panel">
+        <div class="panel-head">
+            <h2>讲师信息</h2>
+            <a class="btn btn-primary" href="{% url 'courses:teacher_add' %}">+ 添加讲师</a>
+        </div>
+        <table class="table table-bordered table-hover">
+            <thead>
+            <tr>
+                <th>昵称</th>
+                <th>简介</th>
+                <th>粉丝数</th>
+                <th>更新时间</th>
+                <th class="col-op">操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for t in teachers %}
+                <tr>
+                    <td><strong>{{ t.nickname }}</strong></td>
+                    <td>{{ t.introduction }}</td>
+                    <td>{{ t.fans }}</td>
+                    <td>{{ t.update_at|date:'Y-m-d H:i' }}</td>
+                    <td class="col-op">
+                        <a class="btn btn-sm btn-warning"
+                           href="{% url 'courses:teacher_update' t.nickname %}">修改</a>
+                        <form class="inline-form" method="post"
+                              action="{% url 'courses:teacher_delete' t.nickname %}"
+                              onsubmit="return confirm('确定要删除讲师「{{ t.nickname }}」吗？');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-danger">删除</button>
+                        </form>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="5" class="empty">暂无讲师数据</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ============ 课程信息 ============ -->
+    <div class="panel">
+        <div class="panel-head">
+            <h2>课程信息</h2>
+        </div>
+        <table class="table table-bordered table-hover">
+            <thead>
+            <tr>
+                <th>课程名</th>
+                <th>讲师</th>
+                <th>课程类型</th>
+                <th>价格</th>
+                <th>容量</th>
+                <th>上线时间</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for c in courses %}
+                <tr>
+                    <td><strong>{{ c.title }}</strong></td>
+                    <td>{{ c.teacher.nickname }}</td>
+                    <td><span class="tag">{{ c.get_type_display }}</span></td>
+                    <td>￥{{ c.price }}</td>
+                    <td>{{ c.volume }}</td>
+                    <td>{{ c.online|date:'Y-m-d' }}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="6" class="empty">暂无课程数据</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ============ 学生信息 ============ -->
+    <div class="panel">
+        <div class="panel-head">
+            <h2>学生信息</h2>
+            <a class="btn btn-primary" href="{% url 'courses:student_add' %}">+ 添加学生</a>
+        </div>
+        <table class="table table-bordered table-hover">
+            <thead>
+            <tr>
+                <th>学号</th>
+                <th>姓名</th>
+                <th>性别</th>
+                <th>年龄</th>
+                <th>所报课程</th>
+                <th>入学时间</th>
+                <th>邮箱</th>
+                <th class="col-op">操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for s in students %}
+                <tr>
+                    <td>{{ s.sno }}</td>
+                    <td><strong>{{ s.name }}</strong></td>
+                    <td>{{ s.get_gender_display }}</td>
+                    <td>{{ s.age }}</td>
+                    <td>{% if s.course %}{{ s.course.title }}{% else %}<span class="muted">未选课</span>{% endif %}</td>
+                    <td>{{ s.enroll_at|date:'Y-m-d' }}</td>
+                    <td>{{ s.email|default:'-' }}</td>
+                    <td class="col-op">
+                        <a class="btn btn-sm btn-warning"
+                           href="{% url 'courses:student_update' s.sno %}">修改</a>
+                        <form class="inline-form" method="post"
+                              action="{% url 'courses:student_delete' s.sno %}"
+                              onsubmit="return confirm('确定要删除学生「{{ s.name }}」吗？');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-danger">删除</button>
+                        </form>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="8" class="empty">暂无学生数据</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+</body>
+</html>
