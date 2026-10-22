@@ -1,5 +1,10 @@
-# wy_site 项目依赖
+﻿# wy_site 项目依赖
 # 安装：  pip install -r requirements.txt
+#
+# 注意：本文件必须保存为 UTF-8 with BOM（文件开头是 EF BB BF）。
+#       中文 Windows 上 pip 默认按 GBK 解码，一旦 BOM 丢失就会报
+#       UnicodeDecodeError: 'gbk' codec can't decode byte 0xa3 ...
+#       所以不要用「UTF-8 无 BOM」的方式另存本文件。
 #
 # 说明：Django 和 mysqlclient 是你直接用的；
 #       asgiref 和 sqlparse 是 Django 自动带上的依赖，写进来只是为了版本可复现。
