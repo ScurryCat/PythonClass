@@ -1,82 +1,92 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <title>添加学生</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
-    <link rel="stylesheet" href="{% static 'css/course.css' %}">
-</head>
-<body>
-<div class="container">
-    <h1>添加学生</h1>
+{% extends 'base.html' %}
 
-    <div class="panel">
-        <form class="form-box" method="post" action="{% url 'courses:student_add' %}">
+{% block title %}添加学生 · 课程信息管理{% endblock %}
+
+{% block page_title %}添加学生{% endblock %}
+{% block page_sub %}学号和姓名必填，课程可以先不选，之后随时补上{% endblock %}
+{% block page_actions %}
+    <a class="btn btn-ghost" href="{% url 'courses:list' %}">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m12 19-7-7 7-7"/>
+            <path d="M19 12H5"/>
+        </svg>
+        返回主页
+    </a>
+{% endblock %}
+
+{% block content %}
+    <section class="card">
+        <form class="form-card" method="post" action="{% url 'courses:student_add' %}">
             {% csrf_token %}
 
-            <div class="form-row">
-                <label for="sno">学号 <span class="req">*</span></label>
-                <input type="text" id="sno" name="sno" required
-                       maxlength="20" placeholder="例如：2024001">
-            </div>
+            <div class="form-grid">
+                <div class="field">
+                    <label for="sno">学号 <span class="req">*</span></label>
+                    <input class="input" type="text" id="sno" name="sno" required
+                           maxlength="20" placeholder="例如：2025001" autocomplete="off">
+                </div>
 
-            <div class="form-row">
-                <label for="name">姓名 <span class="req">*</span></label>
-                <input type="text" id="name" name="name" required
-                       maxlength="30" placeholder="例如：小明">
-            </div>
+                <div class="field">
+                    <label for="name">姓名 <span class="req">*</span></label>
+                    <input class="input" type="text" id="name" name="name" required
+                           maxlength="30" placeholder="例如：张小明" autocomplete="off">
+                </div>
 
-            <div class="form-row">
-                <label for="gender">性别</label>
-                <select id="gender" name="gender">
-                    <option value="1">男</option>
-                    <option value="0">女</option>
-                </select>
-            </div>
+                <div class="field">
+                    <label for="gender">性别</label>
+                    <select class="input" id="gender" name="gender">
+                        <option value="1">男</option>
+                        <option value="0">女</option>
+                    </select>
+                </div>
 
-            <div class="form-row">
-                <label for="age">年龄</label>
-                <input type="number" id="age" name="age" min="1" max="150" value="18">
-            </div>
+                <div class="field">
+                    <label for="age">年龄</label>
+                    <input class="input" type="number" id="age" name="age" min="1" max="150" value="18">
+                </div>
 
-            <div class="form-row">
-                <label for="email">邮箱</label>
-                <input type="email" id="email" name="email" placeholder="例如：xiaoming@example.com">
-            </div>
+                <div class="field">
+                    <label for="email">邮箱 <span class="opt">选填</span></label>
+                    <input class="input" type="email" id="email" name="email"
+                           placeholder="例如：xiaoming@example.com">
+                </div>
 
-            <div class="form-row">
-                <label for="phone">联系电话</label>
-                <input type="text" id="phone" name="phone" maxlength="20" placeholder="例如：13800138000">
-            </div>
+                <div class="field">
+                    <label for="phone">联系电话 <span class="opt">选填</span></label>
+                    <input class="input" type="text" id="phone" name="phone" maxlength="20"
+                           placeholder="例如：13800138000">
+                </div>
 
-            <div class="form-row">
-                <label for="course">所报课程</label>
-                <select id="course" name="course">
-                    <option value="">-- 暂不选课 --</option>
-                    {% for c in courses %}
-                        <option value="{{ c.title }}">{{ c.title }}（{{ c.get_type_display }}）</option>
-                    {% endfor %}
-                </select>
-            </div>
+                <div class="field">
+                    <label for="course">所报课程</label>
+                    <select class="input" id="course" name="course">
+                        <option value="">-- 暂不选课 --</option>
+                        {% for c in courses %}
+                            <option value="{{ c.title }}">{{ c.title }}（{{ c.get_type_display }}）</option>
+                        {% endfor %}
+                    </select>
+                    <p class="hint">提交的是课程名，它正好是 <code>courses</code> 表的主键。</p>
+                </div>
 
-            <div class="form-row">
-                <label for="enroll_at">入学时间 <span class="req">*</span></label>
-                <input type="date" id="enroll_at" name="enroll_at" required>
-            </div>
+                <div class="field">
+                    <label for="enroll_at">入学时间 <span class="req">*</span></label>
+                    <input class="input" type="date" id="enroll_at" name="enroll_at" required
+                           data-default-today>
+                </div>
 
-            <div class="form-row">
-                <label for="introduction">个人简介</label>
-                <textarea id="introduction" name="introduction" rows="3"
-                          placeholder="这个同学很懒，木有签名的说~"></textarea>
+                <div class="field full">
+                    <label for="introduction">个人简介 <span class="opt">选填</span></label>
+                    <textarea class="input" id="introduction" name="introduction" rows="3"
+                              placeholder="这个同学很懒，木有签名的说~"></textarea>
+                </div>
             </div>
 
             <div class="form-actions">
-                <button type="submit" class="btn btn-primary">保存</button>
-                <a class="btn btn-default" href="{% url 'courses:list' %}">返回主页</a>
+                <button type="submit" class="btn btn-primary btn-lg">保存</button>
+                <a class="btn btn-ghost btn-lg" href="{% url 'courses:list' %}">取消</a>
+                <span class="spacer"></span>
             </div>
         </form>
-    </div>
-</div>
-</body>
-</html>
+    </section>
+{% endblock %}

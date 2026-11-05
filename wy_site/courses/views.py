@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.db.models import Avg, Sum
 from django.shortcuts import render, redirect, get_object_or_404
 
 from .models import Teacher, Course, Student
@@ -6,14 +7,62 @@ from .models import Teacher, Course, Student
 
 # ==================== 显示功能（任务三） ====================
 def course_list(request):
-    """主页：把讲师、课程、学生三张表的数据全部展示出来"""
+    """主页：把讲师、课程、学生三张表的数据全部展示出来
+
+    除了三张表本身，这里还顺手算出概览区要用的几个统计量，
+    省得在模板里做聚合。
+    """
     teachers = Teacher.objects.all()
     courses = Course.objects.all()
     students = Student.objects.all()
+
+    teacher_count = teachers.count()
+    course_count = courses.count()
+    student_count = students.count()
+
+    # 课程类型分布（保持模型里 choices 的顺序：后端开发 / 数据挖掘 / 其他）
+    type_colors = {1: 'var(--brand)', 2: 'var(--brand-2)', 0: '#94a3b8'}
+    type_dist = []
+    for value, label in Course._meta.get_field('type').choices:
+        count = courses.filter(type=value).count()
+        type_dist.append({
+            'type': value,
+            'label': label,
+            'count': count,
+            'percent': round(count * 100 / course_count, 2) if course_count else 0,
+            'color': type_colors.get(value, '#94a3b8'),
+        })
+
+    # 粉丝榜前 5，按最高粉丝数换算成百分比宽度
+    top_teachers = list(teachers.order_by('-fans')[:5])
+    max_fans = max((t.fans for t in top_teachers), default=0)
+    teacher_rank = [
+        {
+            'nickname': t.nickname,
+            'fans': t.fans,
+            'percent': round(t.fans * 100 / max_fans) if max_fans else 0,
+        }
+        for t in top_teachers
+    ]
+
+    enrolled = students.filter(course__isnull=False).count()
+    fans_total = teachers.aggregate(total=Sum('fans'))['total'] or 0
+    price_avg = courses.aggregate(avg=Avg('price'))['avg'] or 0
+
     return render(request, 'course.html', {
         'teachers': teachers,
         'courses': courses,
         'students': students,
+        # ---- 概览区
+        'teacher_count': teacher_count,
+        'course_count': course_count,
+        'student_count': student_count,
+        'fans_total': fans_total,
+        'price_avg': round(price_avg),
+        'enrolled': enrolled,
+        'unassigned': student_count - enrolled,
+        'type_dist': type_dist,
+        'teacher_rank': teacher_rank,
     })
 
 

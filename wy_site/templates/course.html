@@ -1,151 +1,433 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <title>课程信息管理</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"
-          integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
-    <link rel="stylesheet" href="{% static 'css/course.css' %}">
-</head>
-<body>
-<div class="container">
+{% extends 'base.html' %}
+{% load course_extras %}
 
-    <h1>课程信息管理</h1>
+{% block title %}数据概览 · 课程信息管理{% endblock %}
 
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-success">{{ message }}</div>
-        {% endfor %}
-    {% endif %}
+{% block page_title %}数据概览{% endblock %}
+{% block page_sub %}讲师 · 课程 · 学生，一屏掌握全部教学数据{% endblock %}
 
-    <!-- ============ 讲师信息 ============ -->
-    <div class="panel">
-        <div class="panel-head">
-            <h2>讲师信息</h2>
-            <a class="btn btn-primary" href="{% url 'courses:teacher_add' %}">+ 添加讲师</a>
+{% block content %}
+
+    {# ==================== 概览 ==================== #}
+    <section class="overview" id="overview">
+
+        <div class="stat-grid">
+            <article class="stat-card">
+                <span class="stat-icon tint-indigo">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                </span>
+                <p class="stat-label">讲师总数</p>
+                <p class="stat-value">{{ teacher_count }}<small>位</small></p>
+                <p class="stat-foot">粉丝合计 {{ fans_total|thousands }}</p>
+            </article>
+
+            <article class="stat-card">
+                <span class="stat-icon tint-violet">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                    </svg>
+                </span>
+                <p class="stat-label">课程总数</p>
+                <p class="stat-value">{{ course_count }}<small>门</small></p>
+                <p class="stat-foot">平均价格 ￥{{ price_avg }}</p>
+            </article>
+
+            <article class="stat-card">
+                <span class="stat-icon tint-emerald">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 10 12 5 2 10l10 5 10-5z"/>
+                        <path d="M6 12v5c0 1.66 2.69 3 6 3s6-1.34 6-3v-5"/>
+                    </svg>
+                </span>
+                <p class="stat-label">学生总数</p>
+                <p class="stat-value">{{ student_count }}<small>名</small></p>
+                <p class="stat-foot">已选课 {{ enrolled }} · 未选课 {{ unassigned }}</p>
+            </article>
         </div>
-        <table class="table table-bordered table-hover">
-            <thead>
-            <tr>
-                <th>昵称</th>
-                <th>简介</th>
-                <th>粉丝数</th>
-                <th>更新时间</th>
-                <th class="col-op">操作</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for t in teachers %}
-                <tr>
-                    <td><strong>{{ t.nickname }}</strong></td>
-                    <td>{{ t.introduction }}</td>
-                    <td>{{ t.fans }}</td>
-                    <td>{{ t.update_at|date:'Y-m-d H:i' }}</td>
-                    <td class="col-op">
-                        <a class="btn btn-sm btn-warning"
-                           href="{% url 'courses:teacher_update' t.nickname %}">修改</a>
-                        <form class="inline-form" method="post"
-                              action="{% url 'courses:teacher_delete' t.nickname %}"
-                              onsubmit="return confirm('确定要删除讲师「{{ t.nickname }}」吗？');">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-sm btn-danger">删除</button>
-                        </form>
-                    </td>
-                </tr>
-            {% empty %}
-                <tr>
-                    <td colspan="5" class="empty">暂无讲师数据</td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-    </div>
 
-    <!-- ============ 课程信息 ============ -->
-    <div class="panel">
-        <div class="panel-head">
-            <h2>课程信息</h2>
+        <div class="chart-grid">
+            <article class="panel">
+                <header class="panel-head">
+                    <h2>课程类型分布</h2>
+                    <span class="panel-hint">共 {{ course_count }} 门</span>
+                </header>
+                {% if course_count %}
+                    <div class="dist-bar" role="img" aria-label="课程类型分布">
+                        {% for t in type_dist %}
+                            {% if t.count %}
+                                <span class="dist-seg" style="width: {{ t.percent }}%; background: {{ t.color }}"
+                                      title="{{ t.label }} {{ t.count }} 门"></span>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    <ul class="legend">
+                        {% for t in type_dist %}
+                            <li>
+                                <i style="background: {{ t.color }}"></i>
+                                <span class="legend-name">{{ t.label }}</span>
+                                <b>{{ t.count }}</b>
+                                <em>{{ t.percent|floatformat:'-1' }}%</em>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="panel-empty">暂无课程数据</p>
+                {% endif %}
+            </article>
+
+            <article class="panel">
+                <header class="panel-head">
+                    <h2>讲师粉丝榜</h2>
+                    <span class="panel-hint">Top 5</span>
+                </header>
+                {% if teacher_rank %}
+                    <ul class="rank">
+                        {% for t in teacher_rank %}
+                            <li>
+                                <span class="rank-no">{{ forloop.counter }}</span>
+                                <span class="rank-name">{{ t.nickname }}</span>
+                                <span class="rank-bar"><i style="width: {{ t.percent }}%"></i></span>
+                                <span class="rank-val">{{ t.fans|thousands }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="panel-empty">暂无讲师数据</p>
+                {% endif %}
+            </article>
         </div>
-        <table class="table table-bordered table-hover">
-            <thead>
-            <tr>
-                <th>课程名</th>
-                <th>讲师</th>
-                <th>课程类型</th>
-                <th>价格</th>
-                <th>容量</th>
-                <th>上线时间</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for c in courses %}
-                <tr>
-                    <td><strong>{{ c.title }}</strong></td>
-                    <td>{{ c.teacher.nickname }}</td>
-                    <td><span class="tag">{{ c.get_type_display }}</span></td>
-                    <td>￥{{ c.price }}</td>
-                    <td>{{ c.volume }}</td>
-                    <td>{{ c.online|date:'Y-m-d' }}</td>
-                </tr>
-            {% empty %}
-                <tr>
-                    <td colspan="6" class="empty">暂无课程数据</td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-    </div>
 
-    <!-- ============ 学生信息 ============ -->
-    <div class="panel">
-        <div class="panel-head">
-            <h2>学生信息</h2>
-            <a class="btn btn-primary" href="{% url 'courses:student_add' %}">+ 添加学生</a>
+    </section>
+
+    {# ==================== 讲师信息 ==================== #}
+    <section class="card block" id="teachers">
+        <header class="card-head">
+            <div class="card-title">
+                <span class="card-icon icon-teacher">
+                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                </span>
+                <div>
+                    <h2>讲师信息 <span class="count-pill">{{ teachers|length }}</span></h2>
+                    <p class="card-sub">昵称为主键，添加后不可修改</p>
+                </div>
+            </div>
+            <div class="card-tools">
+                <label class="search">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                         stroke-linecap="round">
+                        <circle cx="11" cy="11" r="7"/>
+                        <path d="m20 20-3.5-3.5"/>
+                    </svg>
+                    <input type="search" placeholder="搜索昵称 / 简介"
+                           data-table-filter="teacher-table" aria-label="搜索讲师">
+                </label>
+                <a class="btn btn-primary" href="{% url 'courses:teacher_add' %}">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="2.8" stroke-linecap="round">
+                        <path d="M12 5v14M5 12h14"/>
+                    </svg>
+                    添加讲师
+                </a>
+            </div>
+        </header>
+
+        <div class="table-wrap">
+            <table class="data-table data-table-teacher" id="teacher-table">
+                <thead>
+                <tr>
+                    <th>昵称</th>
+                    <th>简介</th>
+                    <th>粉丝数</th>
+                    <th>更新时间</th>
+                    <th class="col-op">操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for t in teachers %}
+                    <tr>
+                        <td>
+                            <div class="who">
+                                <span class="avatar {% cycle 'a1' 'a2' 'a3' 'a4' 'a5' 'a6' %}">{{ t.nickname|first }}</span>
+                                <span class="who-body">
+                                    <span class="name">{{ t.nickname }}</span>
+                                    <span class="sub">创建于 {{ t.create_at|date:'Y-m-d' }}</span>
+                                </span>
+                            </div>
+                        </td>
+                        <td>{{ t.introduction }}</td>
+                        <td class="num">{{ t.fans|thousands }}</td>
+                        <td class="num">{{ t.update_at|date:'Y-m-d H:i' }}</td>
+                        <td class="col-op">
+                            <a class="btn btn-sm btn-warn"
+                               href="{% url 'courses:teacher_update' t.nickname %}">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                     stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 20h9"/>
+                                    <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/>
+                                </svg>
+                                修改
+                            </a>
+                            <form class="inline-form" method="post"
+                                  action="{% url 'courses:teacher_delete' t.nickname %}"
+                                  data-confirm="确定要删除讲师「{{ t.nickname }}」吗？该讲师名下的课程会被一起删除。">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-danger">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M3 6h18"/>
+                                        <path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/>
+                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
+                                        <path d="M10 11v6M14 11v6"/>
+                                    </svg>
+                                    删除
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr class="empty">
+                        <td colspan="5">
+                            <div class="empty-inner">
+                                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                     stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M22 12h-6l-2 3h-4l-2-3H2"/>
+                                    <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
+                                </svg>
+                                <span>暂无讲师数据</span>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
         </div>
-        <table class="table table-bordered table-hover">
-            <thead>
-            <tr>
-                <th>学号</th>
-                <th>姓名</th>
-                <th>性别</th>
-                <th>年龄</th>
-                <th>所报课程</th>
-                <th>入学时间</th>
-                <th>邮箱</th>
-                <th class="col-op">操作</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for s in students %}
-                <tr>
-                    <td>{{ s.sno }}</td>
-                    <td><strong>{{ s.name }}</strong></td>
-                    <td>{{ s.get_gender_display }}</td>
-                    <td>{{ s.age }}</td>
-                    <td>{% if s.course %}{{ s.course.title }}{% else %}<span class="muted">未选课</span>{% endif %}</td>
-                    <td>{{ s.enroll_at|date:'Y-m-d' }}</td>
-                    <td>{{ s.email|default:'-' }}</td>
-                    <td class="col-op">
-                        <a class="btn btn-sm btn-warning"
-                           href="{% url 'courses:student_update' s.sno %}">修改</a>
-                        <form class="inline-form" method="post"
-                              action="{% url 'courses:student_delete' s.sno %}"
-                              onsubmit="return confirm('确定要删除学生「{{ s.name }}」吗？');">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-sm btn-danger">删除</button>
-                        </form>
-                    </td>
-                </tr>
-            {% empty %}
-                <tr>
-                    <td colspan="8" class="empty">暂无学生数据</td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-    </div>
+    </section>
 
-</div>
-</body>
-</html>
+    {# ==================== 课程信息 ==================== #}
+    <section class="card block" id="courses">
+        <header class="card-head">
+            <div class="card-title">
+                <span class="card-icon icon-course">
+                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                    </svg>
+                </span>
+                <div>
+                    <h2>课程信息 <span class="count-pill">{{ courses|length }}</span></h2>
+                    <p class="card-sub">课程的前台增删改请到后台管理操作</p>
+                </div>
+            </div>
+            <div class="card-tools">
+                <label class="search">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                         stroke-linecap="round">
+                        <circle cx="11" cy="11" r="7"/>
+                        <path d="m20 20-3.5-3.5"/>
+                    </svg>
+                    <input type="search" placeholder="搜索课程名 / 讲师"
+                           data-table-filter="course-table" aria-label="搜索课程">
+                </label>
+            </div>
+        </header>
+
+        <div class="table-wrap">
+            <table class="data-table data-table-course" id="course-table">
+                <thead>
+                <tr>
+                    <th>课程名</th>
+                    <th>讲师</th>
+                    <th>课程类型</th>
+                    <th>价格</th>
+                    <th>容量</th>
+                    <th>上线时间</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for c in courses %}
+                    <tr>
+                        <td><span class="primary">{{ c.title }}</span></td>
+                        <td>
+                            <div class="who">
+                                <span class="avatar {% cycle 'a1' 'a2' 'a3' 'a4' 'a5' 'a6' %}">{{ c.teacher.nickname|first }}</span>
+                                <span class="who-body">
+                                    <span class="name">{{ c.teacher.nickname }}</span>
+                                </span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge badge-type-{{ c.type }}">{{ c.get_type_display }}</span>
+                        </td>
+                        <td><span class="badge badge-price">￥{{ c.price }}</span></td>
+                        <td class="num">{{ c.volume }}</td>
+                        <td class="num">{{ c.online|date:'Y-m-d' }}</td>
+                    </tr>
+                {% empty %}
+                    <tr class="empty">
+                        <td colspan="6">
+                            <div class="empty-inner">
+                                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                     stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M22 12h-6l-2 3h-4l-2-3H2"/>
+                                    <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
+                                </svg>
+                                <span>暂无课程数据</span>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    {# ==================== 学生信息 ==================== #}
+    <section class="card block" id="students">
+        <header class="card-head">
+            <div class="card-title">
+                <span class="card-icon icon-student">
+                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 10 12 5 2 10l10 5 10-5z"/>
+                        <path d="M6 12v5c0 1.66 2.69 3 6 3s6-1.34 6-3v-5"/>
+                    </svg>
+                </span>
+                <div>
+                    <h2>学生信息 <span class="count-pill">{{ students|length }}</span></h2>
+                    <p class="card-sub">学号为主键，一名学生暂只能报一门课</p>
+                </div>
+            </div>
+            <div class="card-tools">
+                <label class="search">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                         stroke-linecap="round">
+                        <circle cx="11" cy="11" r="7"/>
+                        <path d="m20 20-3.5-3.5"/>
+                    </svg>
+                    <input type="search" placeholder="搜索姓名 / 学号 / 课程"
+                           data-table-filter="student-table" aria-label="搜索学生">
+                </label>
+                <a class="btn btn-primary" href="{% url 'courses:student_add' %}">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="2.8" stroke-linecap="round">
+                        <path d="M12 5v14M5 12h14"/>
+                    </svg>
+                    添加学生
+                </a>
+            </div>
+        </header>
+
+        <div class="table-wrap">
+            <table class="data-table data-table-student" id="student-table">
+                <thead>
+                <tr>
+                    <th>学号</th>
+                    <th>姓名</th>
+                    <th>性别</th>
+                    <th>年龄</th>
+                    <th>所报课程</th>
+                    <th>入学时间</th>
+                    <th>联系方式</th>
+                    <th class="col-op">操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for s in students %}
+                    <tr>
+                        <td class="num primary">{{ s.sno }}</td>
+                        <td>
+                            <div class="who">
+                                <span class="avatar {% cycle 'a1' 'a2' 'a3' 'a4' 'a5' 'a6' %}">{{ s.name|first }}</span>
+                                <span class="who-body">
+                                    <span class="name">{{ s.name }}</span>
+                                </span>
+                            </div>
+                        </td>
+                        <td>
+                            {% if s.gender == 1 %}
+                                <span class="badge badge-male">{{ s.get_gender_display }}</span>
+                            {% else %}
+                                <span class="badge badge-female">{{ s.get_gender_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="num">{{ s.age }}</td>
+                        <td>
+                            {% if s.course %}
+                                <span class="cell-stack">
+                                    <span class="main">{{ s.course.title }}</span>
+                                    <span class="sub">讲师 · {{ s.course.teacher.nickname }}</span>
+                                </span>
+                            {% else %}
+                                <span class="muted">未选课</span>
+                            {% endif %}
+                        </td>
+                        <td class="num">{{ s.enroll_at|date:'Y-m-d' }}</td>
+                        <td>
+                            <span class="cell-stack">
+                                <span class="main">{{ s.email|default:'—' }}</span>
+                                <span class="sub">{{ s.phone|default:'未填写电话' }}</span>
+                            </span>
+                        </td>
+                        <td class="col-op">
+                            <a class="btn btn-sm btn-warn"
+                               href="{% url 'courses:student_update' s.sno %}">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                     stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 20h9"/>
+                                    <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/>
+                                </svg>
+                                修改
+                            </a>
+                            <form class="inline-form" method="post"
+                                  action="{% url 'courses:student_delete' s.sno %}"
+                                  data-confirm="确定要删除学生「{{ s.name }}」（学号 {{ s.sno }}）吗？">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-danger">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M3 6h18"/>
+                                        <path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/>
+                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
+                                        <path d="M10 11v6M14 11v6"/>
+                                    </svg>
+                                    删除
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr class="empty">
+                        <td colspan="8">
+                            <div class="empty-inner">
+                                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                     stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M22 12h-6l-2 3h-4l-2-3H2"/>
+                                    <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
+                                </svg>
+                                <span>暂无学生数据</span>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+{% endblock %}

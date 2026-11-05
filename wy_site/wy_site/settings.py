@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -20,12 +21,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-8wdmnaj0=8r26)oj3#k#qol4n76um)@bbu0@tuug1c*up%u*qz'
+# 真实密钥放在 local_settings.py（不进 Git），这里只留一个开发用的占位值。
+SECRET_KEY = os.environ.get(
+    'DJANGO_SECRET_KEY',
+    'django-insecure-dev-only-please-change-me',
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DJANGO_DEBUG', '1') == '1'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [h for h in os.environ.get('DJANGO_ALLOWED_HOSTS', '').split(',') if h]
 
 
 # Application definition
@@ -62,6 +67,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'courses.context_processors.sidebar_counts',
             ],
         },
     },
@@ -72,15 +78,18 @@ WSGI_APPLICATION = 'wy_site.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
+#
+# 默认值只够「本机 MySQL、root、空密码」这种最省事的场景；
+# 真实密码请写进 wy_site/wy_site/local_settings.py（已被 .gitignore 忽略），
+# 或者用下面这几个环境变量覆盖。这样仓库里不会出现任何明文密码。
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'course',
-        'USER': 'root',
-        'PASSWORD': '111111',
-        'HOST': '127.0.0.1',
-        'PORT': 3306
+        'NAME': os.environ.get('DB_NAME', 'course'),
+        'USER': os.environ.get('DB_USER', 'root'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+        'HOST': os.environ.get('DB_HOST', '127.0.0.1'),
+        'PORT': os.environ.get('DB_PORT', '3306'),
     }
 }
 
@@ -128,3 +137,16 @@ STATICFILES_DIRS = [BASE_DIR / 'courses' / 'static']
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# ---------------------------------------------------------------------------
+# 本地私有配置（不进 Git）
+#
+# 把 local_settings.example.py 复制成 local_settings.py，填上自己的数据库密码，
+# 这个文件会被 .gitignore 忽略，不会被提交。
+# 没有这个文件也能跑（走上面的环境变量 / 默认值）。
+# ---------------------------------------------------------------------------
+try:
+    from .local_settings import *  # noqa: F401,F403
+except ImportError:
+    pass
