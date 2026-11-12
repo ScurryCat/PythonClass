@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 
 
@@ -74,3 +75,80 @@ class Student(models.Model):
 
     def __str__(self):
         return self.name
+
+
+# 登录账号与业务身份的绑定表
+class UserProfile(models.Model):
+    """把 Django 登录账号关联到讲师或学生。
+
+    登录凭证仍然使用 Django 自带的 auth.User 保存，密码由 Django 加盐哈希；
+    这张表只负责记录「这个账号是谁、属于哪一类身份」：
+      · role=teacher → teacher 字段有值、student 为空
+      · role=student → student 字段有值、teacher 为空
+    """
+
+    ROLE_TEACHER = 'teacher'
+    ROLE_STUDENT = 'student'
+    ROLE_CHOICES = (
+        (ROLE_TEACHER, '教师'),
+        (ROLE_STUDENT, '学生'),
+    )
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='course_profile',
+        verbose_name='登录账号',
+    )
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, verbose_name='身份')
+    teacher = models.OneToOneField(
+        Teacher,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='login_profile',
+        verbose_name='教师',
+    )
+    student = models.OneToOneField(
+        Student,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='login_profile',
+        verbose_name='学生',
+    )
+
+    class Meta:
+        db_table = 'user_profile'
+        verbose_name = '登录账号'
+        verbose_name_plural = verbose_name
+        constraints = [
+            models.CheckConstraint(
+                condition=(
+                    models.Q(role='teacher', teacher__isnull=False, student__isnull=True)
+                    | models.Q(role='student', teacher__isnull=True, student__isnull=False)
+                ),
+                name='userprofile_role_target_consistent',
+            ),
+        ]
+
+    def __str__(self):
+        return '%s · %s' % (self.get_role_display(), self.display_name)
+
+    @property
+    def display_name(self):
+        """界面上显示的名字：教师用昵称，学生用姓名。"""
+        if self.role == self.ROLE_TEACHER and self.teacher_id:
+            return self.teacher.nickname
+        if self.role == self.ROLE_STUDENT and self.student_id:
+            return self.student.name
+        return self.user.get_full_name() or self.user.username
+
+    @property
+    def login_name(self):
+        """用户登录时输入的用户名：教师是昵称，学生是学号。"""
+        if self.role == self.ROLE_TEACHER and self.teacher_id:
+            return self.teacher.nickname
+        if self.role == self.ROLE_STUDENT and self.student_id:
+            return self.student.sno
+        return self.user.username

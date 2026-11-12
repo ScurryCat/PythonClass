@@ -67,25 +67,49 @@
             <em class="side-count">{{ nav_student_count }}</em>
         </a>
 
-        <p class="side-label side-label-2">快捷操作</p>
+        {% if can_manage %}
+            <p class="side-label side-label-2">快捷操作</p>
 
-        <a class="side-link side-link-mini" href="{% url 'courses:teacher_add' %}">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 stroke-width="2.4" stroke-linecap="round">
-                <path d="M12 5v14M5 12h14"/>
-            </svg>
-            <span>添加讲师</span>
-        </a>
-        <a class="side-link side-link-mini" href="{% url 'courses:student_add' %}">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 stroke-width="2.4" stroke-linecap="round">
-                <path d="M12 5v14M5 12h14"/>
-            </svg>
-            <span>添加学生</span>
-        </a>
+            <a class="side-link side-link-mini" href="{% url 'courses:teacher_add' %}">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2.4" stroke-linecap="round">
+                    <path d="M12 5v14M5 12h14"/>
+                </svg>
+                <span>添加讲师</span>
+            </a>
+            <a class="side-link side-link-mini" href="{% url 'courses:student_add' %}">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2.4" stroke-linecap="round">
+                    <path d="M12 5v14M5 12h14"/>
+                </svg>
+                <span>添加学生</span>
+            </a>
+        {% endif %}
     </nav>
 
     <div class="side-foot">
+        <div class="side-account">
+            <span class="side-avatar role-{{ current_role }}">{{ current_display_name|first }}</span>
+            <span class="side-account-body">
+                <strong>{{ current_display_name }}</strong>
+                <small>
+                    {{ current_role_label }}{% if current_role == 'student' %} · {{ current_login_name }}{% endif %}
+                </small>
+            </span>
+            <form method="post" action="{% url 'courses:logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="side-logout" title="退出登录" aria-label="退出登录">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                        <path d="m16 17 5-5-5-5"/>
+                        <path d="M21 12H9"/>
+                    </svg>
+                </button>
+            </form>
+        </div>
+
+        {% if user.is_staff %}
         <a class="side-admin" href="{% url 'admin:index' %}" target="_blank" rel="noopener">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                  stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
@@ -94,6 +118,7 @@
             </svg>
             后台管理
         </a>
+        {% endif %}
         <p class="side-note">Django 5.2 · MySQL</p>
     </div>
 </aside>
@@ -106,7 +131,12 @@
             <h1>{% block page_title %}数据概览{% endblock %}</h1>
             <p class="topbar-sub">{% block page_sub %}{% endblock %}</p>
         </div>
-        <div class="topbar-actions">{% block page_actions %}{% endblock %}</div>
+        <div class="topbar-actions">
+            <span class="role-chip role-{{ current_role }}" title="当前登录身份">
+                {{ current_role_label }}{% if not can_manage %} · 只读{% endif %}
+            </span>
+            {% block page_actions %}{% endblock %}
+        </div>
     </header>
 
     <main class="content">

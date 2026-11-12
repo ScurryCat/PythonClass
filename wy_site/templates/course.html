@@ -8,6 +8,18 @@
 
 {% block content %}
 
+    {% if not can_manage %}
+        <div class="readonly-note" role="status">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="9"/>
+                <path d="M12 11v5"/>
+                <path d="M12 8h.01"/>
+            </svg>
+            <span>你当前以学生身份登录，数据为只读视图。如需维护讲师、课程和学生信息，请使用教师账号登录。</span>
+        </div>
+    {% endif %}
+
     {# ==================== 概览 ==================== #}
     <section class="overview" id="overview">
 
@@ -136,13 +148,15 @@
                     <input type="search" placeholder="搜索昵称 / 简介"
                            data-table-filter="teacher-table" aria-label="搜索讲师">
                 </label>
-                <a class="btn btn-primary" href="{% url 'courses:teacher_add' %}">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                         stroke-width="2.8" stroke-linecap="round">
-                        <path d="M12 5v14M5 12h14"/>
-                    </svg>
-                    添加讲师
-                </a>
+                {% if can_manage %}
+                    <a class="btn btn-primary" href="{% url 'courses:teacher_add' %}">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="2.8" stroke-linecap="round">
+                            <path d="M12 5v14M5 12h14"/>
+                        </svg>
+                        添加讲师
+                    </a>
+                {% endif %}
             </div>
         </header>
 
@@ -154,7 +168,7 @@
                     <th>简介</th>
                     <th>粉丝数</th>
                     <th>更新时间</th>
-                    <th class="col-op">操作</th>
+                    {% if can_manage %}<th class="col-op">操作</th>{% endif %}
                 </tr>
                 </thead>
                 <tbody>
@@ -172,6 +186,7 @@
                         <td>{{ t.introduction }}</td>
                         <td class="num">{{ t.fans|thousands }}</td>
                         <td class="num">{{ t.update_at|date:'Y-m-d H:i' }}</td>
+                        {% if can_manage %}
                         <td class="col-op">
                             <a class="btn btn-sm btn-warn"
                                href="{% url 'courses:teacher_update' t.nickname %}">
@@ -198,10 +213,11 @@
                                 </button>
                             </form>
                         </td>
+                        {% endif %}
                     </tr>
                 {% empty %}
                     <tr class="empty">
-                        <td colspan="5">
+                        <td colspan="{% if can_manage %}5{% else %}4{% endif %}">
                             <div class="empty-inner">
                                 <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                      stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
@@ -231,7 +247,15 @@
                 </span>
                 <div>
                     <h2>课程信息 <span class="count-pill">{{ courses|length }}</span></h2>
-                    <p class="card-sub">课程的前台增删改请到后台管理操作</p>
+                    <p class="card-sub">
+                        {% if not can_manage %}
+                            可搜索、查看全部课程及其讲师
+                        {% elif user.is_staff %}
+                            课程的前台增删改请到后台管理操作
+                        {% else %}
+                            课程在前台暂不提供增删改
+                        {% endif %}
+                    </p>
                 </div>
             </div>
             <div class="card-tools">
@@ -323,13 +347,15 @@
                     <input type="search" placeholder="搜索姓名 / 学号 / 课程"
                            data-table-filter="student-table" aria-label="搜索学生">
                 </label>
-                <a class="btn btn-primary" href="{% url 'courses:student_add' %}">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                         stroke-width="2.8" stroke-linecap="round">
-                        <path d="M12 5v14M5 12h14"/>
-                    </svg>
-                    添加学生
-                </a>
+                {% if can_manage %}
+                    <a class="btn btn-primary" href="{% url 'courses:student_add' %}">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="2.8" stroke-linecap="round">
+                            <path d="M12 5v14M5 12h14"/>
+                        </svg>
+                        添加学生
+                    </a>
+                {% endif %}
             </div>
         </header>
 
@@ -344,7 +370,7 @@
                     <th>所报课程</th>
                     <th>入学时间</th>
                     <th>联系方式</th>
-                    <th class="col-op">操作</th>
+                    {% if can_manage %}<th class="col-op">操作</th>{% endif %}
                 </tr>
                 </thead>
                 <tbody>
@@ -384,6 +410,7 @@
                                 <span class="sub">{{ s.phone|default:'未填写电话' }}</span>
                             </span>
                         </td>
+                        {% if can_manage %}
                         <td class="col-op">
                             <a class="btn btn-sm btn-warn"
                                href="{% url 'courses:student_update' s.sno %}">
@@ -410,10 +437,11 @@
                                 </button>
                             </form>
                         </td>
+                        {% endif %}
                     </tr>
                 {% empty %}
                     <tr class="empty">
-                        <td colspan="8">
+                        <td colspan="{% if can_manage %}8{% else %}7{% endif %}">
                             <div class="empty-inner">
                                 <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                      stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">

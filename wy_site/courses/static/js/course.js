@@ -8,6 +8,9 @@
      5. 顶部提示条自动淡出
      6. 日期字段默认填今天（data-default-today）
      7. 按 "/" 快速聚焦搜索框
+     8. 登录页：身份切换时更新用户名字段文案
+     9. 登录页：密码显示 / 隐藏
+    10. 提交按钮防重复点击（data-submit-once）
    ========================================================================== */
 (function () {
     'use strict';
@@ -249,6 +252,107 @@
     }
 
     /* ------------------------------------------------------------------
+       8. 登录页：教师 / 学生身份切换时，更新用户名字段文案
+       教师用昵称登录，学生用学号登录，同一个输入框需要跟着身份变。
+       ------------------------------------------------------------------ */
+    function initLoginRoleHint() {
+        var radios = document.querySelectorAll('input[data-login-role]');
+        if (!radios.length) {
+            return;
+        }
+
+        var label = document.querySelector('[data-login-name-label]');
+        var hint = document.querySelector('[data-login-name-hint]');
+        var input = document.getElementById('username');
+
+        var copy = {
+            teacher: {
+                label: '教师昵称',
+                hint: '输入讲师昵称，例如：老王学堂',
+                placeholder: '请输入教师昵称'
+            },
+            student: {
+                label: '学号',
+                hint: '输入学生学号，例如：2024001',
+                placeholder: '请输入学号'
+            }
+        };
+
+        function apply() {
+            var checked = document.querySelector('input[data-login-role]:checked');
+
+            // 给选中的身份卡加 class，作为 :has() 的兜底（老浏览器也能看到选中态）
+            Array.prototype.forEach.call(radios, function (radio) {
+                var roleLabel = radio.closest ? radio.closest('.auth-role') : null;
+                if (roleLabel) {
+                    roleLabel.classList.toggle('is-selected', radio.checked);
+                }
+            });
+
+            var text = copy[checked ? checked.value : 'teacher'];
+            if (!text) {
+                return;
+            }
+            if (label) {
+                label.textContent = text.label;
+            }
+            if (hint) {
+                hint.textContent = text.hint;
+            }
+            if (input) {
+                input.placeholder = text.placeholder;
+            }
+        }
+
+        Array.prototype.forEach.call(radios, function (radio) {
+            radio.addEventListener('change', apply);
+        });
+        apply();
+    }
+
+    /* ------------------------------------------------------------------
+       9. 登录页：密码显示 / 隐藏
+       用法：<button data-password-toggle="password">显示</button>
+       ------------------------------------------------------------------ */
+    function initPasswordToggles() {
+        var buttons = document.querySelectorAll('[data-password-toggle]');
+
+        Array.prototype.forEach.call(buttons, function (button) {
+            var input = document.getElementById(button.getAttribute('data-password-toggle'));
+            if (!input) {
+                return;
+            }
+
+            button.addEventListener('click', function () {
+                var show = input.type === 'password';
+                input.type = show ? 'text' : 'password';
+                button.textContent = show ? '隐藏' : '显示';
+                button.setAttribute('aria-pressed', show ? 'true' : 'false');
+                button.setAttribute('aria-label', show ? '隐藏密码' : '显示密码');
+                input.focus();
+            });
+        });
+    }
+
+    /* ------------------------------------------------------------------
+       10. 提交按钮防重复点击
+       用法：<form data-submit-once>
+       submit 事件在浏览器原生校验通过后才触发，因此不会影响必填校验。
+       ------------------------------------------------------------------ */
+    function initSubmitOnce() {
+        var forms = document.querySelectorAll('form[data-submit-once]');
+
+        Array.prototype.forEach.call(forms, function (form) {
+            form.addEventListener('submit', function () {
+                var button = form.querySelector('button[type="submit"]');
+                if (button) {
+                    button.disabled = true;
+                }
+            });
+        });
+    }
+
+    /* ------------------------------------------------------------------
        启动
        ------------------------------------------------------------------ */
     function boot() {
@@ -259,6 +363,9 @@
         initFlashes();
         initDefaultDates();
         initSlashShortcut();
+        initLoginRoleHint();
+        initPasswordToggles();
+        initSubmitOnce();
     }
 
     if (document.readyState === 'loading') {

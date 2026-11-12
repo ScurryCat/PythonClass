@@ -5,6 +5,10 @@ from . import views
 app_name = 'courses'
 
 urlpatterns = [
+    # 登录 / 退出
+    path('login/', views.login_view, name='login'),
+    path('logout/', views.logout_view, name='logout'),
+
     # 主页 —— 显示功能（任务三）
     path('', views.course_list, name='list'),
 

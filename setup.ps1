@@ -271,7 +271,9 @@ Write-Host ''
 Write-Host ' 全部完成。' -ForegroundColor Green
 Write-Host '   启动:  cd wy_site;  python manage.py runserver'
 Write-Host '   首页:  http://127.0.0.1:8000/'
+Write-Host '   登录:  http://127.0.0.1:8000/login/'
 Write-Host '   后台:  http://127.0.0.1:8000/admin/'
+Write-Host '   提示:  首次体验请先执行 python manage.py seed_data，自动生成演示账号。'
 
 if ($RunServer) {
     Write-Host ''

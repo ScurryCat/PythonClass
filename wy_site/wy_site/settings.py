@@ -68,6 +68,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'courses.context_processors.sidebar_counts',
+                'courses.context_processors.account_context',
             ],
         },
     },
@@ -111,6 +112,15 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+
+# 登录相关：未登录访问首页会跳到 login；登录/退出后的默认落地页
+LOGIN_URL = 'courses:login'
+LOGIN_REDIRECT_URL = 'courses:list'
+LOGOUT_REDIRECT_URL = 'courses:login'
+
+# 勾选“记住我”时会话保留 2 周；不勾选时由 login_view 改成浏览器会话
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 14
 
 
 # Internationalization
