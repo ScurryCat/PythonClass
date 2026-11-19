@@ -3,32 +3,32 @@
 {% block title %}添加学生 · 课程信息管理{% endblock %}
 
 {% block page_title %}添加学生{% endblock %}
-{% block page_sub %}学号和姓名必填，课程可以先不选，之后随时补上{% endblock %}
+{% block page_sub %}填写学生资料，课程可稍后选择{% endblock %}
 {% block page_actions %}
-    <a class="btn btn-ghost" href="{% url 'courses:list' %}">
+    <a class="btn btn-ghost" href="{% url 'courses:list' %}#students">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
              stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <path d="m12 19-7-7 7-7"/>
             <path d="M19 12H5"/>
         </svg>
-        返回主页
+        返回学生信息
     </a>
 {% endblock %}
 
 {% block content %}
-    <section class="card">
+    <section class="card manage-form" aria-label="学生信息表单">
         <form class="form-card" method="post" action="{% url 'courses:student_add' %}">
             {% csrf_token %}
 
             <div class="form-grid">
                 <div class="field">
-                    <label for="sno">学号 <span class="req">*</span></label>
+                    <label for="sno">学号 <span class="req" aria-hidden="true">*</span></label>
                     <input class="input" type="text" id="sno" name="sno" required
                            maxlength="20" placeholder="例如：2025001" autocomplete="off">
                 </div>
 
                 <div class="field">
-                    <label for="name">姓名 <span class="req">*</span></label>
+                    <label for="name">姓名 <span class="req" aria-hidden="true">*</span></label>
                     <input class="input" type="text" id="name" name="name" required
                            maxlength="30" placeholder="例如：张小明" autocomplete="off">
                 </div>
@@ -66,11 +66,10 @@
                             <option value="{{ c.title }}">{{ c.title }}（{{ c.get_type_display }}）</option>
                         {% endfor %}
                     </select>
-                    <p class="hint">提交的是课程名，它正好是 <code>courses</code> 表的主键。</p>
                 </div>
 
                 <div class="field">
-                    <label for="enroll_at">入学时间 <span class="req">*</span></label>
+                    <label for="enroll_at">入学时间 <span class="req" aria-hidden="true">*</span></label>
                     <input class="input" type="date" id="enroll_at" name="enroll_at" required
                            data-default-today>
                 </div>
@@ -84,8 +83,7 @@
 
             <div class="form-actions">
                 <button type="submit" class="btn btn-primary btn-lg">保存</button>
-                <a class="btn btn-ghost btn-lg" href="{% url 'courses:list' %}">取消</a>
-                <span class="spacer"></span>
+                <a class="btn btn-ghost btn-lg" href="{% url 'courses:list' %}#students">取消</a>
             </div>
         </form>
     </section>

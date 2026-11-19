@@ -3,29 +3,30 @@
 {% block title %}添加讲师 · 课程信息管理{% endblock %}
 
 {% block page_title %}添加讲师{% endblock %}
-{% block page_sub %}昵称必填，其余字段都可以留空，默认值会自动补上{% endblock %}
+{% block page_sub %}填写新讲师的基础资料{% endblock %}
 {% block page_actions %}
-    <a class="btn btn-ghost" href="{% url 'courses:list' %}">
+    <a class="btn btn-ghost" href="{% url 'courses:list' %}#teachers">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
              stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <path d="m12 19-7-7 7-7"/>
             <path d="M19 12H5"/>
         </svg>
-        返回主页
+        返回讲师信息
     </a>
 {% endblock %}
 
 {% block content %}
-    <section class="card">
+    <section class="card manage-form" aria-label="讲师信息表单">
         <form class="form-card" method="post" action="{% url 'courses:teacher_add' %}">
             {% csrf_token %}
 
             <div class="form-grid">
                 <div class="field full">
-                    <label for="nickname">昵称 <span class="req">*</span></label>
+                    <label for="nickname">昵称 <span class="req" aria-hidden="true">*</span></label>
                     <input class="input" type="text" id="nickname" name="nickname" required
-                           maxlength="30" placeholder="例如：老王学堂" autocomplete="off">
-                    <p class="hint">昵称是 <code>teacher</code> 表的主键，<strong>添加后不可修改</strong>，请确认后填写。</p>
+                           maxlength="30" placeholder="例如：老王学堂" autocomplete="off"
+                           aria-describedby="nickname-hint">
+                    <p class="hint" id="nickname-hint">昵称用于教师登录，添加后固定。</p>
                 </div>
 
                 <div class="field full">
@@ -44,8 +45,7 @@
 
             <div class="form-actions">
                 <button type="submit" class="btn btn-primary btn-lg">保存</button>
-                <a class="btn btn-ghost btn-lg" href="{% url 'courses:list' %}">取消</a>
-                <span class="spacer"></span>
+                <a class="btn btn-ghost btn-lg" href="{% url 'courses:list' %}#teachers">取消</a>
             </div>
         </form>
     </section>

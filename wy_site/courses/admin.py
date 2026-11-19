@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from .accounts import ROLE_STUDENT, ROLE_TEACHER, delete_linked_account, ensure_account
-from .models import Course, Student, Teacher
+from .models import Course, LearningResource, Student, Teacher
 
 
 class LinkedAccountAdminMixin:
@@ -41,3 +41,10 @@ class StudentAdmin(LinkedAccountAdminMixin, admin.ModelAdmin):
 @admin.register(Course)
 class CourseAdmin(admin.ModelAdmin):
     pass
+
+
+@admin.register(LearningResource)
+class LearningResourceAdmin(admin.ModelAdmin):
+    list_display = ('title', 'course', 'tags')
+    list_filter = ('course',)
+    search_fields = ('title', 'description', 'tags')

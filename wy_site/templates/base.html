@@ -4,25 +4,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#1e1b4b">
+    <meta name="theme-color" content="#17382e">
     <title>{% block title %}课程信息管理{% endblock %}</title>
     <link rel="icon" type="image/svg+xml" href="{% static 'favicon.svg' %}">
     <link rel="stylesheet" href="{% static 'css/course.css' %}">
+    {% block extra_styles %}{% endblock %}
 </head>
 <body class="{% block body_class %}page-shell{% endblock %}">
+<a class="skip-link" href="#main-content">跳到主要内容</a>
 
 {# ==================== 左侧导航 ==================== #}
 <aside class="sidebar">
     <a class="brand" href="{% url 'courses:list' %}">
         <span class="brand-mark">课</span>
         <span class="brand-text">
-            <strong>课程信息管理</strong>
-            <small>Course Manager</small>
+            <strong>教研工作台</strong>
+            <small>PythonClass</small>
         </span>
     </a>
 
-    <nav class="side-nav">
-        <p class="side-label">工作台</p>
+    <nav class="side-nav" aria-label="主导航">
+        {% if current_role == 'teacher' or current_role == 'student' %}
+            {% if current_role == 'teacher' %}
+                {% url 'courses:teacher_tasks' as study_url %}
+            {% else %}
+                {% url 'courses:student_tasks' as study_url %}
+            {% endif %}
+            {% with endpoint=request.resolver_match.url_name %}
+                <a class="side-link side-link-primary study-nav" href="{{ study_url }}"
+                   {% if endpoint == 'teacher_tasks' or endpoint == 'task_create' or endpoint == 'task_progress' or endpoint == 'submission_review' or endpoint == 'student_tasks' or endpoint == 'student_task' %}aria-current="location"{% endif %}>
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <rect x="5" y="4" width="14" height="16" rx="2"/>
+                        <path d="M9 9h6m-6 4h6m-6 4h3"/>
+                    </svg>
+                    <span>{% if current_role == 'teacher' %}教师督导台{% else %}我的学习任务{% endif %}</span>
+                </a>
+            {% endwith %}
+        {% endif %}
 
         <a class="side-link" href="{% url 'courses:list' %}#overview" data-spy="overview">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -35,55 +54,60 @@
             <span>数据概览</span>
         </a>
 
-        <a class="side-link" href="{% url 'courses:list' %}#teachers" data-spy="teachers">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-                <circle cx="9" cy="7" r="4"/>
-                <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-            </svg>
-            <span>讲师信息</span>
-            <em class="side-count">{{ nav_teacher_count }}</em>
-        </a>
+        <div class="side-data-links">
+            <p class="side-label">基础资料</p>
+            <a class="side-link" href="{% url 'courses:list' %}#teachers" data-spy="teachers">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+                <span>讲师信息</span>
+                <em class="side-count">{{ nav_teacher_count }}</em>
+            </a>
 
-        <a class="side-link" href="{% url 'courses:list' %}#courses" data-spy="courses">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-            </svg>
-            <span>课程信息</span>
-            <em class="side-count">{{ nav_course_count }}</em>
-        </a>
+            <a class="side-link" href="{% url 'courses:list' %}#courses" data-spy="courses">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                </svg>
+                <span>课程信息</span>
+                <em class="side-count">{{ nav_course_count }}</em>
+            </a>
 
-        <a class="side-link" href="{% url 'courses:list' %}#students" data-spy="students">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M22 10 12 5 2 10l10 5 10-5z"/>
-                <path d="M6 12v5c0 1.66 2.69 3 6 3s6-1.34 6-3v-5"/>
-            </svg>
-            <span>学生信息</span>
-            <em class="side-count">{{ nav_student_count }}</em>
-        </a>
+            <a class="side-link" href="{% url 'courses:list' %}#students" data-spy="students">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 10 12 5 2 10l10 5 10-5z"/>
+                    <path d="M6 12v5c0 1.66 2.69 3 6 3s6-1.34 6-3v-5"/>
+                </svg>
+                <span>学生信息</span>
+                <em class="side-count">{{ nav_student_count }}</em>
+            </a>
+        </div>
 
         {% if can_manage %}
-            <p class="side-label side-label-2">快捷操作</p>
+            <div class="side-shortcuts">
+                <p class="side-label side-label-2">快捷操作</p>
 
-            <a class="side-link side-link-mini" href="{% url 'courses:teacher_add' %}">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                     stroke-width="2.4" stroke-linecap="round">
-                    <path d="M12 5v14M5 12h14"/>
-                </svg>
-                <span>添加讲师</span>
-            </a>
-            <a class="side-link side-link-mini" href="{% url 'courses:student_add' %}">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                     stroke-width="2.4" stroke-linecap="round">
-                    <path d="M12 5v14M5 12h14"/>
-                </svg>
-                <span>添加学生</span>
-            </a>
+                <a class="side-link side-link-mini" href="{% url 'courses:teacher_add' %}">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="2.4" stroke-linecap="round">
+                        <path d="M12 5v14M5 12h14"/>
+                    </svg>
+                    <span>添加讲师</span>
+                </a>
+                <a class="side-link side-link-mini" href="{% url 'courses:student_add' %}">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="2.4" stroke-linecap="round">
+                        <path d="M12 5v14M5 12h14"/>
+                    </svg>
+                    <span>添加学生</span>
+                </a>
+            </div>
         {% endif %}
     </nav>
 
@@ -119,7 +143,6 @@
             后台管理
         </a>
         {% endif %}
-        <p class="side-note">Django 5.2 · MySQL</p>
     </div>
 </aside>
 
@@ -133,19 +156,19 @@
         </div>
         <div class="topbar-actions">
             <span class="role-chip role-{{ current_role }}" title="当前登录身份">
-                {{ current_role_label }}{% if not can_manage %} · 只读{% endif %}
+                {% block role_label %}{{ current_role_label }}{% if not can_manage %} · 只读{% endif %}{% endblock %}
             </span>
             {% block page_actions %}{% endblock %}
         </div>
     </header>
 
-    <main class="content">
+    <main class="content" id="main-content" tabindex="-1">
 
         {% if messages %}
             <div class="flashes">
                 {% for message in messages %}
-                    <div class="flash flash-{{ message.tags|default:'info' }}" role="status">
-                        <span class="flash-icon">
+                    <div class="flash flash-{{ message.tags|default:'info' }}" role="{% if message.tags == 'error' %}alert{% else %}status{% endif %}">
+                        <span class="flash-icon" aria-hidden="true">
                             {% if message.tags == 'success' %}
                                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                      stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round">
@@ -176,5 +199,6 @@
 </div>
 
 <script src="{% static 'js/course.js' %}"></script>
+{% block extra_scripts %}{% endblock %}
 </body>
 </html>

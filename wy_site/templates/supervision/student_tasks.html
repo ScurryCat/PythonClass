@@ -1,0 +1,42 @@
+{% extends 'supervision/base.html' %}
+
+{% block title %}我的学习任务 · 课程信息管理{% endblock %}
+{% block page_title %}我的学习任务{% endblock %}
+{% block page_sub %}{% if student.course %}{{ student.course.title }}{% endif %}{% endblock %}
+
+{% block content %}
+<div class="study-stack">
+    <section class="card study-panel study-index" aria-labelledby="study-task-list">
+        <div class="study-panel-head">
+            <h2 id="study-task-list">课程任务</h2>
+            {% if rows %}<span class="study-count">{{ rows|length }} 项任务</span>{% endif %}
+        </div>
+        {% if rows %}
+            <div class="study-index-key study-index-key--student" aria-hidden="true">
+                <span>任务与截止时间</span>
+                <span>提交状态</span>
+            </div>
+            <ul class="study-list study-index-list">
+                {% for row in rows %}
+                    <li>
+                        <a class="study-list-link study-list-link--student" href="{% url 'courses:student_task' row.task.id %}">
+                            <span class="study-row-main">
+                                <strong>{{ row.task.title }}</strong>
+                                <time class="study-row-date" datetime="{{ row.task.due_at|date:'c' }}">截止 {{ row.task.due_at|date:"Y-m-d H:i" }}</time>
+                            </span>
+                            <span class="study-state-group">
+                                {% include 'supervision/_status.html' with status=row.status status_label=row.status_label late=row.late only %}
+                            </span>
+                            <span class="study-link-action">打开任务 <span aria-hidden="true">→</span></span>
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="study-empty">
+                {% if student.course %}老师还没有发布学习任务。{% else %}关联课程后，这里会显示课程任务。{% endif %}
+            </p>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

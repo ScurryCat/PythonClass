@@ -1,5 +1,7 @@
 from django.conf import settings
+from django.core.validators import URLValidator
 from django.db import models
+from django.utils import timezone
 
 
 # 讲师信息表
@@ -152,3 +154,69 @@ class UserProfile(models.Model):
         if self.role == self.ROLE_STUDENT and self.student_id:
             return self.student.sno
         return self.user.username
+
+
+class StudyTask(models.Model):
+    course = models.ForeignKey(
+        Course, on_delete=models.CASCADE, related_name='study_tasks', verbose_name='课程',
+    )
+    title = models.CharField(max_length=150, verbose_name='任务标题')
+    instructions = models.TextField(max_length=4000, verbose_name='任务要求')
+    due_at = models.DateTimeField(verbose_name='截止时间')
+
+    class Meta:
+        ordering = ['due_at', 'pk']
+        verbose_name = '学习任务'
+        verbose_name_plural = verbose_name
+
+    def __str__(self):
+        return self.title
+
+
+class Submission(models.Model):
+    class Status(models.TextChoices):
+        PENDING = 'pending', '待批阅'
+        RETURNED = 'returned', '退回重交'
+        REVIEWED = 'reviewed', '已批阅'
+
+    task = models.ForeignKey(
+        StudyTask, on_delete=models.CASCADE, related_name='submissions', verbose_name='任务',
+    )
+    student = models.ForeignKey(
+        Student, on_delete=models.CASCADE, related_name='study_submissions', verbose_name='学生',
+    )
+    content = models.TextField(max_length=5000, verbose_name='作业内容')
+    recognized_text = models.TextField(blank=True, max_length=2000, verbose_name='确认后的截图文字')
+    difficulties = models.TextField(blank=True, max_length=2000, verbose_name='疑难点')
+    submitted_at = models.DateTimeField(default=timezone.now, verbose_name='提交时间')
+    status = models.CharField(
+        max_length=10, choices=Status.choices, default=Status.PENDING, verbose_name='批阅状态',
+    )
+    feedback = models.TextField(blank=True, max_length=3000, verbose_name='教师反馈')
+    reviewed_at = models.DateTimeField(blank=True, null=True, verbose_name='反馈时间')
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['task', 'student'], name='one_submission_per_task_student'),
+        ]
+        verbose_name = '作业提交'
+        verbose_name_plural = verbose_name
+
+
+class LearningResource(models.Model):
+    course = models.ForeignKey(
+        Course, on_delete=models.CASCADE, related_name='learning_resources', verbose_name='课程',
+    )
+    title = models.CharField(max_length=150, verbose_name='资料标题')
+    description = models.TextField(max_length=2000, verbose_name='简介')
+    tags = models.CharField(
+        blank=True, max_length=255, verbose_name='标签', help_text='用逗号分隔知识点',
+    )
+    url = models.URLField(validators=[URLValidator(schemes=['http', 'https'])], verbose_name='链接')
+
+    class Meta:
+        verbose_name = '课程资料'
+        verbose_name_plural = verbose_name
+
+    def __str__(self):
+        return self.title

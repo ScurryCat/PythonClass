@@ -1,0 +1,7 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block body_class %}page-shell study-page{% endblock %}
+{% block role_label %}{{ current_role_label }}{% endblock %}
+{% block extra_styles %}<link rel="stylesheet" href="{% static 'css/supervision.css' %}">{% endblock %}
+{% block extra_scripts %}<script defer src="{% static 'js/supervision.js' %}"></script>{% endblock %}

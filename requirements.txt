@@ -15,3 +15,10 @@ mysqlclient==2.3.0
 # 下面两个是 Django 的间接依赖，一般不用手写，列出以防版本漂移
 asgiref==3.12.1
 sqlparse==0.6.0
+
+# 督导工作台：本地截图识别、关键词提取和资料推荐
+rapidocr==3.10.0
+onnxruntime==1.32.0
+Pillow==13.0.0
+jieba==0.42.1
+scikit-learn==1.9.1
