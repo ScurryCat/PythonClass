@@ -1,0 +1,31 @@
+{% extends 'supervision/base.html' %}
+
+{% block title %}发布学习任务 · 教师督导台{% endblock %}
+{% block page_title %}发布学习任务{% endblock %}
+{% block page_sub %}发布后，所选课程的学生可以查看并提交。{% endblock %}
+{% block page_actions %}<a class="btn btn-ghost" href="{% url 'courses:teacher_tasks' %}">返回督导台</a>{% endblock %}
+
+{% block content %}
+<div class="study-stack">
+    <section class="card study-panel study-form-width">
+        {% if has_courses %}
+            <form method="post">
+                {% csrf_token %}
+                {{ form.non_field_errors }}
+                <div class="form-grid">
+                    {% include 'supervision/_field.html' with field=form.course %}
+                    {% include 'supervision/_field.html' with field=form.due_at %}
+                    {% include 'supervision/_field.html' with field=form.title full=True %}
+                    {% include 'supervision/_field.html' with field=form.instructions full=True %}
+                </div>
+                <div class="form-actions">
+                    <button class="btn btn-primary btn-lg" type="submit">发布任务</button>
+                    <a class="btn btn-ghost btn-lg" href="{% url 'courses:teacher_tasks' %}">取消</a>
+                </div>
+            </form>
+        {% else %}
+            <p class="study-empty">暂无任教课程。关联课程后即可发布任务。</p>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

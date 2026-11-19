@@ -33,6 +33,9 @@ POST_ONLY_VIEW_NAMES = {
     'courses:logout',
     'courses:teacher_delete',
     'courses:student_delete',
+    'courses:task_ocr',
+    'courses:task_recommend',
+    'courses:feedback_draft',
 }
 
 

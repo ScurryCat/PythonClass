@@ -1,0 +1,38 @@
+{% extends 'supervision/base.html' %}
+
+{% block title %}教师督导台 · 课程信息管理{% endblock %}
+{% block page_title %}教师督导台{% endblock %}
+{% block page_sub %}发布学习任务，跟进提交和批阅进度。{% endblock %}
+{% block page_actions %}
+    {% if has_courses %}<a class="btn btn-primary" href="{% url 'courses:task_create' %}">发布任务</a>{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="study-stack">
+    <section class="card study-panel" aria-labelledby="study-task-list">
+        <div class="study-panel-head">
+            <h2 id="study-task-list">我发布的任务</h2>
+        </div>
+        {% if tasks %}
+            <ul class="study-list">
+                {% for task in tasks %}
+                    <li>
+                        <a class="study-list-link" href="{% url 'courses:task_progress' task.id %}">
+                            <span class="study-row-main">
+                                <strong>{{ task.title }}</strong>
+                                <span>{{ task.course.title }}</span>
+                            </span>
+                            <span class="study-row-date">截止 {{ task.due_at|date:"Y-m-d H:i" }}</span>
+                            <span class="study-link-action">查看进度 <span aria-hidden="true">→</span></span>
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="study-empty">
+                {% if has_courses %}还没有发布的任务。{% else %}暂无任教课程。关联课程后即可发布任务。{% endif %}
+            </p>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

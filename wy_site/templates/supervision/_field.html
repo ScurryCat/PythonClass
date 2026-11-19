@@ -1,0 +1,6 @@
+<div class="field{% if full %} full{% endif %}">
+    {{ field.label_tag }}
+    {{ field }}
+    {% if field.help_text %}<p class="hint" id="{{ field.auto_id }}_helptext">{{ field.help_text }}</p>{% endif %}
+    {{ field.errors }}
+</div>

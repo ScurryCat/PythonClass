@@ -1,0 +1,63 @@
+{% extends 'supervision/base.html' %}
+
+{% block title %}{{ task.title }} · 任务进度{% endblock %}
+{% block page_title %}{{ task.title }}{% endblock %}
+{% block page_sub %}{{ task.course.title }} · 截止 {{ task.due_at|date:"Y-m-d H:i" }}{% endblock %}
+{% block page_actions %}<a class="btn btn-ghost" href="{% url 'courses:teacher_tasks' %}">返回督导台</a>{% endblock %}
+
+{% block content %}
+<div class="study-stack" data-progress>
+    <div class="study-metrics" aria-label="任务进度统计">
+        <button type="button" class="study-metric study-metric--pending" data-filter="pending" aria-pressed="false" aria-controls="study-roster">
+            <span>待批阅</span>
+            <strong>{{ counts.pending }}</strong>
+        </button>
+        <button type="button" class="study-metric study-metric--reviewed" data-filter="reviewed" aria-pressed="false" aria-controls="study-roster">
+            <span>已批阅</span>
+            <strong>{{ counts.reviewed }}</strong>
+        </button>
+        <button type="button" class="study-metric study-metric--overdue" data-filter="overdue" aria-pressed="false" aria-controls="study-roster">
+            <span>逾期未交</span>
+            <strong>{{ counts.overdue }}</strong>
+        </button>
+    </div>
+
+    <section class="card study-panel" aria-labelledby="study-roster-title">
+        <div class="study-panel-head">
+            <div>
+                <h2 id="study-roster-title">学生名单</h2>
+                <p class="hint" role="status" data-roster-count>显示 {{ counts.total }} 名学生</p>
+            </div>
+            <button class="btn btn-ghost" type="button" data-filter="all" aria-pressed="true" aria-controls="study-roster">全部学生</button>
+        </div>
+        <ul id="study-roster" class="study-list">
+            {% for row in rows %}
+                <li class="study-roster-row" data-row-status="{{ row.status }}">
+                    <span class="study-row-main">
+                        <strong>{{ row.student.name }}</strong>
+                        <span>{{ row.student.sno }}</span>
+                    </span>
+                    <span class="study-state-group">
+                        {% include 'supervision/_status.html' with status=row.status status_label=row.status_label late=row.late only %}
+                    </span>
+                    {% if row.submission %}
+                        <time class="study-row-date" datetime="{{ row.submission.submitted_at|date:'c' }}">{{ row.submission.submitted_at|date:"m-d H:i" }} 提交</time>
+                        <a href="{% url 'courses:submission_review' row.submission.id %}" class="study-link-action">
+                            {% if row.status == 'pending' %}批阅{% else %}查看提交{% endif %}
+                            <span aria-hidden="true">→</span>
+                        </a>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+        <p class="study-empty" data-roster-empty{% if rows %} hidden{% endif %}>
+            {% if rows %}该状态下暂无学生。{% else %}这门课程暂无学生。{% endif %}
+        </p>
+    </section>
+
+    <section class="card study-panel" aria-labelledby="study-instructions">
+        <div class="study-panel-head"><h2 id="study-instructions">任务要求</h2></div>
+        <p class="study-readable">{{ task.instructions }}</p>
+    </section>
+</div>
+{% endblock %}

@@ -95,6 +95,14 @@ DATABASES = {
 }
 
 
+# 通义千问评语草稿。密钥从环境变量或本地私有配置读取。
+DASHSCOPE_API_KEY = os.environ.get('DASHSCOPE_API_KEY', '')
+DASHSCOPE_MODEL = os.environ.get('DASHSCOPE_MODEL', 'qwen-plus')
+DASHSCOPE_BASE_URL = os.environ.get(
+    'DASHSCOPE_BASE_URL', 'https://dashscope.aliyuncs.com/compatible-mode/v1',
+)
+
+
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
