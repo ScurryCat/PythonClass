@@ -2,12 +2,12 @@
 
 {% block title %}{{ task.title }} · 我的学习任务{% endblock %}
 {% block page_title %}{{ task.title }}{% endblock %}
-{% block page_sub %}{{ task.course.title }} · 截止 {{ task.due_at|date:"Y-m-d H:i" }}{% endblock %}
+{% block page_sub %}{{ task.course.title }} · 截止 <time datetime="{{ task.due_at|date:'c' }}">{{ task.due_at|date:"Y-m-d H:i" }}</time>{% endblock %}
 {% block page_actions %}<a class="btn btn-ghost" href="{% url 'courses:student_tasks' %}">返回任务列表</a>{% endblock %}
 
 {% block content %}
 <div class="study-stack" data-study-task>
-    <section class="card study-panel" aria-labelledby="study-instructions">
+    <section class="card study-panel study-brief" aria-labelledby="study-instructions">
         <div class="study-panel-head">
             <h2 id="study-instructions">任务要求</h2>
             <div class="study-state-group">
@@ -21,7 +21,7 @@
     </section>
 
     {% if submission.feedback %}
-        <section class="card study-panel" aria-labelledby="study-feedback">
+        <section class="card study-panel study-feedback-band" aria-labelledby="study-feedback">
             <div class="study-panel-head">
                 <h2 id="study-feedback">{% if status == 'pending' %}上次教师反馈{% else %}教师反馈{% endif %}</h2>
             </div>
@@ -29,49 +29,51 @@
         </section>
     {% endif %}
 
-    {% if can_submit %}
-        <section class="card study-panel" aria-labelledby="study-submit">
-            <div class="study-panel-head"><h2 id="study-submit">{% if submission %}重新提交{% else %}提交作业{% endif %}</h2></div>
-            <form method="post" class="study-form" data-submission-form data-ocr-url="{% url 'courses:task_ocr' task.id %}">
-                {% csrf_token %}
-                {{ form.non_field_errors }}
-                <div class="study-upload">
-                    <div class="field">
-                        <label for="study-screenshot">上传运行截图 <span class="opt">选填</span></label>
-                        <p class="hint" id="study-screenshot-hint">支持不超过 5 MB 的 PNG 或 JPEG。提交时保存你确认后的文字。</p>
-                        <div class="study-action-row">
-                            <input type="file" id="study-screenshot" data-screenshot-file accept="image/png,image/jpeg" aria-describedby="study-screenshot-hint">
-                            <button class="btn btn-ghost" type="button" data-ocr-button disabled>识别文字</button>
+    <div class="study-split study-split--task">
+        {% if can_submit %}
+            <section class="card study-panel" aria-labelledby="study-submit">
+                <div class="study-panel-head"><h2 id="study-submit">{% if submission %}重新提交{% else %}提交作业{% endif %}</h2></div>
+                <form method="post" class="study-form" data-submission-form data-ocr-url="{% url 'courses:task_ocr' task.id %}">
+                    {% csrf_token %}
+                    {{ form.non_field_errors }}
+                    {% include 'supervision/_field.html' with field=form.content %}
+                    <div class="study-upload">
+                        <div class="field">
+                            <label for="study-screenshot">上传运行截图 <span class="opt">选填</span></label>
+                            <p class="hint" id="study-screenshot-hint">支持不超过 5 MB 的 PNG 或 JPEG。提交时保存你确认后的文字。</p>
+                            <div class="study-action-row">
+                                <input type="file" id="study-screenshot" data-screenshot-file accept="image/png,image/jpeg" aria-describedby="study-screenshot-hint">
+                                <button class="btn btn-ghost" type="button" data-ocr-button disabled>识别文字</button>
+                            </div>
+                            <img class="study-screenshot" data-screenshot-preview alt="待识别的运行截图" hidden>
+                            <p class="study-request-status" role="status" data-ocr-status></p>
                         </div>
-                        <img class="study-screenshot" data-screenshot-preview alt="待识别的运行截图" hidden>
-                        <p class="study-request-status" role="status" data-ocr-status></p>
+                        {% include 'supervision/_field.html' with field=form.recognized_text mono=True %}
                     </div>
-                </div>
-                {% include 'supervision/_field.html' with field=form.recognized_text %}
-                {% include 'supervision/_field.html' with field=form.content %}
-                {% include 'supervision/_field.html' with field=form.difficulties %}
-                <div class="form-actions">
-                    <button class="btn btn-primary btn-lg" type="submit">{% if submission %}重新提交{% else %}提交作业{% endif %}</button>
-                </div>
-            </form>
-        </section>
-    {% elif submission %}
-        <section class="card study-panel" aria-labelledby="study-my-submission">
-            <div class="study-panel-head"><h2 id="study-my-submission">我的提交</h2></div>
-            <dl class="study-details">
-                <dt>作业内容</dt>
-                <dd class="study-readable">{{ submission.content }}</dd>
-                {% if submission.recognized_text %}<dt>截图文字</dt><dd class="study-readable">{{ submission.recognized_text }}</dd>{% endif %}
-                {% if submission.difficulties %}<dt>遇到的疑难点</dt><dd class="study-readable">{{ submission.difficulties }}</dd>{% endif %}
-            </dl>
-        </section>
-    {% endif %}
+                    {% include 'supervision/_field.html' with field=form.difficulties %}
+                    <div class="form-actions">
+                        <button class="btn btn-primary btn-lg" type="submit">{% if submission %}重新提交{% else %}提交作业{% endif %}</button>
+                    </div>
+                </form>
+            </section>
+        {% elif submission %}
+            <section class="card study-panel study-reading-panel" aria-labelledby="study-my-submission">
+                <div class="study-panel-head"><h2 id="study-my-submission">我的提交</h2></div>
+                <dl class="study-details">
+                    <dt>作业内容</dt>
+                    <dd class="study-readable">{{ submission.content }}</dd>
+                    {% if submission.recognized_text %}<dt>截图文字</dt><dd class="study-readable study-code">{{ submission.recognized_text }}</dd>{% endif %}
+                    {% if submission.difficulties %}<dt>遇到的疑难点</dt><dd class="study-readable">{{ submission.difficulties }}</dd>{% endif %}
+                </dl>
+            </section>
+        {% endif %}
 
-    <section class="card study-panel" aria-labelledby="study-recommendations">
-        <div class="study-panel-head">
-            <div>
-                <h2 id="study-recommendations">学习资料推荐</h2>
-                <p class="hint">根据任务主题、截图文字和疑难点匹配本课程资料。</p>
+        <aside class="card study-panel study-recommend-panel" aria-labelledby="study-recommendations">
+            <div class="study-panel-head">
+                <div>
+                    <h2 id="study-recommendations">学习资料推荐</h2>
+                    <p class="hint">根据任务主题、截图文字和疑难点匹配本课程资料。</p>
+                </div>
             </div>
             <form data-recommend-form data-recommend-url="{% url 'courses:task_recommend' task.id %}">
                 {% csrf_token %}
@@ -79,17 +81,17 @@
                     <input type="hidden" name="recognized_text" value="{{ submission.recognized_text }}">
                     <input type="hidden" name="difficulties" value="{{ submission.difficulties }}">
                 {% endif %}
-                <button class="btn btn-primary" type="button" data-recommend-button>推荐资料</button>
+                <button class="btn btn-ghost" type="button" data-recommend-button>推荐资料</button>
             </form>
-        </div>
-        <p class="study-request-status" role="status" data-recommend-status></p>
-        <div class="study-recommend-results" data-recommend-results hidden>
-            <div class="study-keyword-box" data-keyword-box hidden>
-                <h3>提取到的知识点</h3>
-                <ul class="study-keywords" data-keywords></ul>
+            <p class="study-request-status" role="status" data-recommend-status></p>
+            <div class="study-recommend-results" data-recommend-results hidden>
+                <div class="study-keyword-box" data-keyword-box hidden>
+                    <h3>提取到的知识点</h3>
+                    <ul class="study-keywords" data-keywords></ul>
+                </div>
+                <div class="study-resource-grid" data-resources></div>
             </div>
-            <div class="study-resource-grid" data-resources></div>
-        </div>
-    </section>
+        </aside>
+    </div>
 </div>
 {% endblock %}

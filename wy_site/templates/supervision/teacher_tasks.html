@@ -9,20 +9,25 @@
 
 {% block content %}
 <div class="study-stack">
-    <section class="card study-panel" aria-labelledby="study-task-list">
+    <section class="card study-panel study-index" aria-labelledby="study-task-list">
         <div class="study-panel-head">
             <h2 id="study-task-list">我发布的任务</h2>
+            {% if tasks %}<span class="study-count">{{ tasks|length }} 项任务</span>{% endif %}
         </div>
         {% if tasks %}
-            <ul class="study-list">
+            <div class="study-index-key study-index-key--teacher" aria-hidden="true">
+                <span>任务与课程</span>
+                <span>截止时间</span>
+            </div>
+            <ul class="study-list study-index-list">
                 {% for task in tasks %}
                     <li>
-                        <a class="study-list-link" href="{% url 'courses:task_progress' task.id %}">
+                        <a class="study-list-link study-list-link--teacher" href="{% url 'courses:task_progress' task.id %}">
                             <span class="study-row-main">
                                 <strong>{{ task.title }}</strong>
                                 <span>{{ task.course.title }}</span>
                             </span>
-                            <span class="study-row-date">截止 {{ task.due_at|date:"Y-m-d H:i" }}</span>
+                            <time class="study-row-date" datetime="{{ task.due_at|date:'c' }}"><span class="study-date-label">截止</span> {{ task.due_at|date:"Y-m-d H:i" }}</time>
                             <span class="study-link-action">查看进度 <span aria-hidden="true">→</span></span>
                         </a>
                     </li>

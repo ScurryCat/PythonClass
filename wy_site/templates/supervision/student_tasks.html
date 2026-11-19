@@ -6,16 +6,23 @@
 
 {% block content %}
 <div class="study-stack">
-    <section class="card study-panel" aria-labelledby="study-task-list">
-        <div class="study-panel-head"><h2 id="study-task-list">课程任务</h2></div>
+    <section class="card study-panel study-index" aria-labelledby="study-task-list">
+        <div class="study-panel-head">
+            <h2 id="study-task-list">课程任务</h2>
+            {% if rows %}<span class="study-count">{{ rows|length }} 项任务</span>{% endif %}
+        </div>
         {% if rows %}
-            <ul class="study-list">
+            <div class="study-index-key study-index-key--student" aria-hidden="true">
+                <span>任务与截止时间</span>
+                <span>提交状态</span>
+            </div>
+            <ul class="study-list study-index-list">
                 {% for row in rows %}
                     <li>
-                        <a class="study-list-link" href="{% url 'courses:student_task' row.task.id %}">
+                        <a class="study-list-link study-list-link--student" href="{% url 'courses:student_task' row.task.id %}">
                             <span class="study-row-main">
                                 <strong>{{ row.task.title }}</strong>
-                                <span>截止 {{ row.task.due_at|date:"Y-m-d H:i" }}</span>
+                                <time class="study-row-date" datetime="{{ row.task.due_at|date:'c' }}">截止 {{ row.task.due_at|date:"Y-m-d H:i" }}</time>
                             </span>
                             <span class="study-state-group">
                                 {% include 'supervision/_status.html' with status=row.status status_label=row.status_label late=row.late only %}

@@ -5,31 +5,32 @@
 {% block page_title %}修改学生{% endblock %}
 {% block page_sub %}正在编辑「{{ student.name }}」的资料{% endblock %}
 {% block page_actions %}
-    <a class="btn btn-ghost" href="{% url 'courses:list' %}">
+    <a class="btn btn-ghost" href="{% url 'courses:list' %}#students">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
              stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <path d="m12 19-7-7 7-7"/>
             <path d="M19 12H5"/>
         </svg>
-        返回主页
+        返回学生信息
     </a>
 {% endblock %}
 
 {% block content %}
-    <section class="card">
+    <section class="card manage-form" aria-label="学生信息表单">
         <form class="form-card" method="post"
               action="{% url 'courses:student_update' student.sno %}">
             {% csrf_token %}
 
             <div class="form-grid">
                 <div class="field">
-                    <label for="sno">学号（主键，不可修改）</label>
-                    <input class="input" type="text" id="sno" value="{{ student.sno }}" readonly>
-                    <p class="hint">学号是主键，如需变更请删除后重新添加。</p>
+                    <label for="sno">学号</label>
+                    <input class="input" type="text" id="sno" value="{{ student.sno }}" readonly
+                           aria-describedby="sno-hint">
+                    <p class="hint" id="sno-hint">学号用于学生登录，添加后固定。</p>
                 </div>
 
                 <div class="field">
-                    <label for="name">姓名 <span class="req">*</span></label>
+                    <label for="name">姓名 <span class="req" aria-hidden="true">*</span></label>
                     <input class="input" type="text" id="name" name="name" required
                            maxlength="30" value="{{ student.name }}">
                 </div>
@@ -73,7 +74,7 @@
                 </div>
 
                 <div class="field">
-                    <label for="enroll_at">入学时间 <span class="req">*</span></label>
+                    <label for="enroll_at">入学时间 <span class="req" aria-hidden="true">*</span></label>
                     <input class="input" type="date" id="enroll_at" name="enroll_at" required
                            value="{{ student.enroll_at|date:'Y-m-d' }}">
                 </div>
@@ -87,8 +88,7 @@
 
             <div class="form-actions">
                 <button type="submit" class="btn btn-primary btn-lg">保存修改</button>
-                <a class="btn btn-ghost btn-lg" href="{% url 'courses:list' %}">取消</a>
-                <span class="spacer"></span>
+                <a class="btn btn-ghost btn-lg" href="{% url 'courses:list' %}#students">取消</a>
             </div>
         </form>
     </section>

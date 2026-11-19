@@ -6,23 +6,23 @@
 {% block page_actions %}<a class="btn btn-ghost" href="{% url 'courses:task_progress' task.id %}">返回任务进度</a>{% endblock %}
 
 {% block content %}
-<div class="study-review-grid">
-    <section class="card study-panel" aria-labelledby="study-submission">
+<div class="study-split study-split--review">
+    <section class="card study-panel study-reading-panel" aria-labelledby="study-submission">
         <div class="study-panel-head">
             <div>
                 <h2 id="study-submission">{{ submission.student.name }}的作业</h2>
-                <p class="hint">{{ submission.student.sno }} · {{ submission.submitted_at|date:"Y-m-d H:i" }} 提交</p>
+                <p class="hint">{{ submission.student.sno }} · <time datetime="{{ submission.submitted_at|date:'c' }}">{{ submission.submitted_at|date:"Y-m-d H:i" }}</time> 提交</p>
             </div>
             <span class="study-status study-status--{{ submission.status }}">{{ submission.get_status_display }}</span>
         </div>
         <dl class="study-details">
             <dt>作业内容</dt>
             <dd class="study-readable">{{ submission.content }}</dd>
-            {% if submission.recognized_text %}<dt>截图文字</dt><dd class="study-readable">{{ submission.recognized_text }}</dd>{% endif %}
+            {% if submission.recognized_text %}<dt>截图文字</dt><dd class="study-readable study-code">{{ submission.recognized_text }}</dd>{% endif %}
             {% if submission.difficulties %}<dt>遇到的疑难点</dt><dd class="study-readable">{{ submission.difficulties }}</dd>{% endif %}
         </dl>
-        <details class="study-task-reference">
-            <summary>查看任务要求</summary>
+        <details class="study-task-reference" open>
+            <summary>任务要求</summary>
             <p class="study-readable">{{ task.instructions }}</p>
         </details>
     </section>
@@ -36,25 +36,27 @@
                 {{ form.version.errors }}
                 {{ form.non_field_errors }}
                 {% if submission.feedback %}
-                    <div class="study-draft-box">
+                    <div class="study-previous-feedback">
                         <h3>上次批阅反馈</h3>
                         <p class="study-readable">{{ submission.feedback }}</p>
                     </div>
                 {% endif %}
+                {% include 'supervision/_field.html' with field=form.feedback %}
                 <div class="study-draft-box">
+                    <h3>AI 评语草稿</h3>
                     <div class="field">
-                        <label for="study-review-points">批阅要点 <span class="opt">选填 · 用于生成评语</span></label>
+                        <label for="study-review-points">批阅要点 <span class="opt">选填</span></label>
                         <textarea class="input" id="study-review-points" name="review_points" rows="3" maxlength="2000"
                                   placeholder="例如：函数结构清晰。补充空输入的测试。">{{ request.POST.review_points }}</textarea>
                     </div>
                     <button class="btn btn-ghost" type="button" data-draft-button>生成评语草稿</button>
                     <p class="study-request-status" role="status" data-draft-status></p>
                     <div class="study-draft-result" data-draft-result hidden>
+                        <h4>草稿预览</h4>
                         <p class="study-readable" data-draft-output></p>
                         <button class="btn btn-ghost" type="button" data-use-draft>填入反馈</button>
                     </div>
                 </div>
-                {% include 'supervision/_field.html' with field=form.feedback %}
                 {{ form.action.errors }}
                 <div class="form-actions">
                     <button class="btn btn-primary btn-lg" type="submit" name="action" value="review">发布反馈</button>
